@@ -1,0 +1,11 @@
+__pycache__
+*.pyc
+*.npz
+data10*
+models
+records
+push.sh
+pull.sh
+test.py
+visualization.py
+.*ckp.*
