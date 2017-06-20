@@ -38,7 +38,7 @@ if __name__ == "__main__":
     label_names = meta[b"fine_label_names"]
     records_dir = "records"
     models_dir = "models"
-    model_id = "conv1"
+    model_id = "conv2"
     if not os.path.exists(records_dir) or not os.path.isdir(records_dir):
             os.mkdir(records_dir)
     if not os.path.exists(models_dir) or not os.path.isdir(models_dir):
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     optimizer = tf.train.AdamOptimizer()
 
     crop_size = 24
-    model = models.ConvNet1([crop_size, crop_size, 3], 10, sess, optimizer=optimizer, model_id=model_id)
+    model = models.ConvNet2([crop_size, crop_size, 3], 10, sess, optimizer=optimizer, model_id=model_id)
     saver = tf.train.Saver(model.get_trainable_variables())
     max_epoch = 200
     early_stop = False

@@ -37,7 +37,7 @@ class Classifier(object):
     def __build__(self, init_params):
         pass
 
-    def fit(self, X, y):
+    def fit(self, X, y, keep_prob=0.5):
         data_size = len(X)
         indexes = np.arange(data_size)
         batches = int(len(indexes) / self.batch_size)
@@ -49,10 +49,13 @@ class Classifier(object):
                 end_idx = -1
             batch_x = X[indexes[start_idx : end_idx]]
             batch_y = y[indexes[start_idx : end_idx]]
-            _, loss = self.sess.run([self.train_op, self.loss], feed_dict={self.x : batch_x, self.y : batch_y})
+            _, loss = self._fit(batch_x, batch_y)
             print("Epoch %d, batch %d/%d, loss %f"%(self.epoch, i+1, batches, loss))
-
         self.epoch += 1
+
+    def _fit(self, x, y):
+        update, loss = self.sess.run([self.train_op, self.loss], feed_dict={self.x : x, self.y : y})
+        return update, loss
 
     def predict(self, X):
         predicts = self.sess.run(self.predict, feed_dict={self.x : X}).argmax(axis=1)
@@ -119,7 +122,7 @@ class ConvNet1(Classifier):
 class ConvNet2(Classifier):
 
     def __build__(self, weight_decay=1e-4):
-        keep_prob = 0.5
+        keep_prob = tf.placeholder(dtype=tf.float32)
         inputs_shape = [None]
         inputs_shape.extend(self.img_shape)
         x = tf.placeholder(dtype=tf.float32, shape=inputs_shape)
@@ -137,7 +140,7 @@ class ConvNet2(Classifier):
         flatten = tf.reshape(h3, [-1, functions.dim(h3)])
         h4, dt4, w4, b4 = functions.dense_layer(flatten, 1024)
         h4 = tf.nn.relu(h4)
-        h4 = functions.dropout(h4, keep_prob, self.is_train)
+        h4 = tf.nn.dropout(h4, keep_prob)
         h5, dt5, w5, b5 = functions.dense_layer(h4, self.classes_num)
         predict = tf.nn.softmax(h5)
         loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=h5, labels=y))
@@ -150,6 +153,23 @@ class ConvNet2(Classifier):
         self.hiddens = {"h1" : h1, "h2" : h2, "h3" : h3, "h4" : h4, "h5" : h5}
         self.x = x
         self.y = y
+        self.keep_prob = keep_prob
+
+    def _fit(self, x, y):
+        update, loss = self.sess.run([self.train_op, self.loss], feed_dict={self.x : x, self.y : y, self.keep_prob : 0.5})
+        return update, loss
+
+    def predict(self, X):
+        predicts = self.sess.run(self.predict, feed_dict={self.x : X, self.keep_prob : 1.}).argmax(axis=1)
+        return predicts
+
+    def distribution(self, X):
+        probabilities = self.sess.run(self.predict, feed_dict={self.x : X, self.keep_prob : 1.})
+        return probabilities
+
+    def eval_loss(self, X, y):
+        loss = self.sess.run(self.loss, feed_dict={self.x : X, self.y : y, self.keep_prob : 1.})
+        return loss
 
 
 class ConvNet3(Classifier):

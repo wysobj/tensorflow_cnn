@@ -52,11 +52,6 @@ def max_pool(x, ksize, strides=2):
 def avg_pool(x, ksize, strides=2):
     return tf.nn.avg_pool(x, ksize=[1, ksize, ksize, 1], strides=[1, strides, strides, 1], padding="SAME")
 
-def dropout(x, keep_prob, is_train):
-    if is_train:
-        x = tf.nn.dropout(x, keep_prob)
-    return x
-
 def bn_layer(x, is_train, decay=0.9):
     a_shape = x.get_shape().as_list()
     a_num = a_shape[-1]
