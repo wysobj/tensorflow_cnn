@@ -66,7 +66,7 @@ if __name__ == "__main__":
         train_precision, train_loss = eval_precision_and_loss(train_X, train_y, model, crop_size)
         valid_precision, valid_loss = eval_precision_and_loss(valid_X, valid_y, model , crop_size)
         test_precision, test_loss = eval_precision_and_loss(test_X, test_y, model, crop_size)
-        print("Precision : " + "train %f, valid %f, test %f"%(train_precision, valid_precision, test_precision))
+        print("Accuracy : " + "train %f, valid %f, test %f"%(train_precision, valid_precision, test_precision))
         loss_trace["train"].append(train_loss)
         error_trace["train"].append(1 - train_precision)
         loss_trace["valid"].append(valid_loss)
