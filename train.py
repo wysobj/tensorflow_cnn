@@ -40,9 +40,9 @@ if __name__ == "__main__":
     models_dir = "models"
     model_id = "conv2"
     if not os.path.exists(records_dir) or not os.path.isdir(records_dir):
-            os.mkdir(records_dir)
+        os.mkdir(records_dir)
     if not os.path.exists(models_dir) or not os.path.isdir(models_dir):
-            os.mkdir(models_dir)
+        os.mkdir(models_dir)
     loss_path = os.path.join(records_dir, model_id+"loss")
     precision_path = os.path.join(records_dir, model_id+"precision")
     models_path = os.path.join(models_dir, model_id+"model")
@@ -79,7 +79,6 @@ if __name__ == "__main__":
                 best_model_valid = valid_precision
                 best_model_train = train_precision
                 best_model_test = test_precision
-                saver.save(sess, models_path)
             if bad_counter > patience:
                 end_time = time.time()
                 time_consume = end_time - start_time

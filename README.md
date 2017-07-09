@@ -35,6 +35,5 @@
 
 ### Dependencies
 
-* [Python3.5](https://www.python.org/)
 * [Numpy](http://www.numpy.org/)
 * [Tensorflow](https://www.tensorflow.org/)

@@ -18,7 +18,7 @@ def dim(x):
     shape = x.get_shape().as_list()
     return np.prod(shape[1:])
 
-def weight_init(shape, w_init=None):
+def weight_init(shape):
     if len(shape) == 2:
         in_dim = shape[0]
     if len(shape) == 4:
@@ -27,19 +27,19 @@ def weight_init(shape, w_init=None):
     decay_term = tf.nn.l2_loss(W)
     return W, decay_term
 
-def dense_layer(x, hdim, w_init=None, b_init=None):
+def dense_layer(x, hdim):
     in_dim = x.get_shape().as_list()[-1]
     shape = np.array([in_dim, hdim])
-    W, decay_term = weight_init(shape, w_init)
+    W, decay_term = weight_init(shape)
     b = tf.Variable(tf.constant(1., shape=[hdim]))
     h = tf.matmul(x, W)
     h = h + b
     return h, decay_term, W, b
 
-def conv_layer(x, out_channel, w_init=None, b_init=None, ksize=3, strides=1):
+def conv_layer(x, out_channel, b_init=None, ksize=3, strides=1):
     in_channel = x.get_shape().as_list()[-1]
     shape = [ksize, ksize, in_channel, out_channel]
-    W, decay_term = weight_init(shape, w_init)
+    W, decay_term = weight_init(shape)
     b = tf.Variable(tf.constant(1., shape=[out_channel]))
     h = tf.nn.conv2d(x, W, strides=[1, strides, strides, 1], padding="SAME")
     h = tf.nn.bias_add(h, b)
