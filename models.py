@@ -212,3 +212,57 @@ class ConvNet3(Classifier):
                             "ema_variance3" : ema_variance3, "ema_variance4" : ema_variance4}
         self.x = x
         self.y = y
+
+
+class ResNet(Classifier):
+
+    def _res_block(self, x, internal_size, out_size, block_name):
+        in_dim = x.get_shape()[-1]
+        short_cut = x
+        h1, dt1, w1, b1 = functions.conv_layer(x, internal_size, ksize=3)
+        h1, gamma1, beta1, ema_mean1, ema_variance1 = functions.bn_layer(h1, self.is_train)
+        h1 = tf.nn.relu(h1)
+        h2, dt2, w2, b2 = functions.conv_layer(h1, out_size, ksize=3)
+        h2, gamma2, beta2, ema_mean2, ema_variance2 = functions.bn_layer(h2, self.is_train)
+        h2 = tf.nn.relu(h2)
+        self.decay_terms.update({block_name+"_dt1" : dt1, block_name+"dt2" : dt2})
+        self.weights.update({block_name+"w1" : w1, block_name+"w2" : w2})
+        self.biases.update({block_name+"b1" : b1, block_name+"b2" : b2})
+        self.hiddens.update({block_name+"h1" : h1, block_name+"h2" : h2})
+        return (short_cut + h2)
+
+    def __build__(self, weight_decay=1e-4):
+        inputs_shape = [None]
+        inputs_shape.extend(self.img_shape)
+        x = tf.placeholder(dtype=tf.float32, shape=inputs_shape)
+        labels_shape = [None, self.classes_num]
+        y = tf.placeholder(dtype=tf.int32, shape=labels_shape)
+        self.decay_terms = {}
+        self.weights = {}
+        self.biases = {}
+        self.hiddens = {}
+        self.bns = {}
+        h0, dt0, w0, b0 = functions.conv_layer(x, 16, ksize=3)
+        h0, gamma0, beta0, ema_mean0, ema_variance0 = functions.bn_layer(h0, self.is_train)
+        h = tf.nn.relu(h0)
+        h = self._res_block(h, 16, 16, "res_block1")
+        h = self._res_block(h, 32, 16, "res_block2")
+        h = self._res_block(h, 64, 16, "res_block3")
+        flatten = tf.reshape(h, [-1, functions.dim(h)])
+        h1, dt1, w1, b1 = functions.dense_layer(flatten, 1024)
+        h1, gamma1, beta1, ema_mean1, ema_variance1 = functions.bn_layer(h1, self.is_train)
+        h1 = tf.nn.relu(h1)
+        h2, dt2, w2, b2 = functions.dense_layer(h1, self.classes_num)
+        predict = tf.nn.softmax(h2)
+        loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=h2, labels=y))
+        self.decay_terms.update({"dense_dt0" : dt0, "dense_dt1" : dt1, "dense_dt2" : dt2})
+        self.weights.update({"dense_w0" : w0, "dense_w1" : w1, "dense_w2" : w2})
+        self.biases.update({"dense_b0" : b0, "dense_b1" : b1, "dense_b2" : b2})
+        self.hiddens.update({"dense_h0" : h0, "dense_h1" : h1, "dense_h2" : h2})
+        if weight_decay:
+            for k, v in self.decay_terms.items():
+                loss += weight_decay * v
+        self.loss = loss
+        self.predict = predict
+        self.x = x
+        self.y = y
