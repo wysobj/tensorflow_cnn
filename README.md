@@ -6,11 +6,12 @@
   
 1. Model1 : AlexNet like structure without dropout layers.
 2. Model2 : AlexNet with 0.5 dropout rate.
-3. Model3 : AlexNet combined with batch normalization layers.
+3. Model3 : AlexNet with batch normalization layers.
+4. Model4 : Shallow ResNet with batch normalization layers.
 
 ### Model Structure
 
-| Models              | CNN1        | CNN2        | CNN3        |
+| Models              | Model1        | Model2        | Model3        |
 |---------------------|-------------|-------------|-------------|
 | Random Crop         | √           | √           | √           |
 | Random Flip         | √           | √           | √           |
